@@ -1,0 +1,371 @@
+{
+  "id": "laundrydesk",
+  "name": "LaundryDesk",
+  "tagline": "Every garment accounted for.",
+  "category": "Laundry & dry cleaning",
+  "color": "#0369A1",
+  "description": "Offline garment tickets, service pricing, collection dates and customer balances for laundry counters.",
+  "entities": [
+    {
+      "key": "customers",
+      "label": "Customers",
+      "singular": "Customer",
+      "description": "Contacts and notes for repeat business.",
+      "primary": "name",
+      "fields": [
+        {
+          "key": "name",
+          "label": "Full name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "phone",
+          "label": "Phone",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "address",
+          "label": "Address",
+          "type": "textarea"
+        },
+        {
+          "key": "notes",
+          "label": "Notes",
+          "type": "textarea"
+        }
+      ],
+      "columns": [
+        "name",
+        "phone",
+        "address"
+      ]
+    },
+    {
+      "key": "services",
+      "label": "Service catalog",
+      "singular": "Service",
+      "description": "Price each garment and treatment as a service item.",
+      "primary": "name",
+      "fields": [
+        {
+          "key": "name",
+          "label": "Garment / service name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "treatment",
+          "label": "Treatment",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Wash & fold",
+            "Wash & iron",
+            "Dry clean",
+            "Iron only",
+            "Other"
+          ]
+        },
+        {
+          "key": "price",
+          "label": "Price per garment",
+          "type": "money",
+          "required": true,
+          "min": 0,
+          "default": 0
+        },
+        {
+          "key": "notes",
+          "label": "Care notes",
+          "type": "textarea"
+        }
+      ],
+      "columns": [
+        "name",
+        "treatment",
+        "price",
+        "notes"
+      ]
+    },
+    {
+      "key": "tickets",
+      "label": "Laundry tickets",
+      "singular": "Laundry ticket",
+      "description": "Count garments, retain care instructions and collect balances.",
+      "primary": "title",
+      "fields": [
+        {
+          "key": "title",
+          "label": "Ticket title / bag label",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "customer",
+          "label": "Customer",
+          "type": "reference",
+          "required": true,
+          "reference": "customers"
+        },
+        {
+          "key": "received",
+          "label": "Received date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "key": "due",
+          "label": "Promised collection date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "key": "garments",
+          "label": "Garments and services",
+          "type": "lines",
+          "required": true,
+          "reference": "services",
+          "priceField": "price",
+          "integer": true
+        },
+        {
+          "key": "condition",
+          "label": "Condition / stains / defects",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "key": "instructions",
+          "label": "Care instructions",
+          "type": "textarea"
+        },
+        {
+          "key": "tags",
+          "label": "Individual garment tags",
+          "type": "textarea",
+          "hint": "Record physical tag references manually."
+        },
+        {
+          "key": "amount",
+          "label": "Ticket total",
+          "type": "money",
+          "required": true,
+          "min": 0,
+          "default": 0
+        },
+        {
+          "key": "paid",
+          "label": "Advance / collected",
+          "type": "money",
+          "required": true,
+          "min": 0,
+          "default": 0
+        },
+        {
+          "key": "paymentMethod",
+          "label": "Initial payment method",
+          "type": "select",
+          "required": true,
+          "options": [
+            "cash",
+            "card",
+            "bank"
+          ],
+          "default": "cash",
+          "hint": "Applies to the amount entered when creating this record. Later payments choose their own method."
+        },
+        {
+          "key": "collectionNote",
+          "label": "Collected by / collection note",
+          "type": "text"
+        },
+        {
+          "key": "conditionPhoto",
+          "label": "Garment condition photo",
+          "type": "image",
+          "hint": "Optional image stored offline with this record."
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Received",
+            "Washing",
+            "Pressing",
+            "Ready",
+            "Collected",
+            "Cancelled"
+          ],
+          "default": "Received"
+        }
+      ],
+      "columns": [
+        "title",
+        "customer",
+        "received",
+        "due",
+        "amount",
+        "status"
+      ],
+      "workflow": {
+        "field": "status",
+        "initial": "Received",
+        "states": [
+          "Received",
+          "Washing",
+          "Pressing",
+          "Ready",
+          "Collected",
+          "Cancelled"
+        ],
+        "terminal": [
+          "Collected",
+          "Cancelled"
+        ]
+      },
+      "finance": {
+        "total": "amount",
+        "paid": "paid"
+      },
+      "calculations": [
+        {
+          "target": "amount",
+          "op": "sumLines",
+          "fields": [
+            "garments"
+          ]
+        }
+      ],
+      "dateOrder": [
+        [
+          "received",
+          "due"
+        ]
+      ]
+    },
+    {
+      "key": "supplies",
+      "label": "Supply stock",
+      "singular": "Supply",
+      "description": "Manually maintain detergent, bags and other consumables.",
+      "primary": "name",
+      "fields": [
+        {
+          "key": "name",
+          "label": "Supply name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "unit",
+          "label": "Unit",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "quantity",
+          "label": "Quantity on hand",
+          "type": "number",
+          "required": true,
+          "min": 0,
+          "default": 0
+        },
+        {
+          "key": "unitCost",
+          "label": "Last unit cost",
+          "type": "money",
+          "min": 0,
+          "default": 0
+        },
+        {
+          "key": "notes",
+          "label": "Notes",
+          "type": "textarea"
+        }
+      ],
+      "columns": [
+        "name",
+        "unit",
+        "quantity",
+        "unitCost"
+      ]
+    },
+    {
+      "key": "expenses",
+      "label": "Expenses",
+      "singular": "Expense",
+      "description": "Record operating costs separately from customer bills.",
+      "primary": "title",
+      "fields": [
+        {
+          "key": "title",
+          "label": "Expense description",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "date",
+          "label": "Expense date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "key": "category",
+          "label": "Category",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Supplies",
+            "Utilities",
+            "Rent",
+            "Wages",
+            "Other"
+          ]
+        },
+        {
+          "key": "amount",
+          "label": "Amount",
+          "type": "money",
+          "required": true,
+          "min": 0,
+          "default": 0
+        },
+        {
+          "key": "method",
+          "label": "Payment method",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Cash",
+            "Card",
+            "Bank"
+          ],
+          "default": "Cash"
+        },
+        {
+          "key": "note",
+          "label": "Notes",
+          "type": "textarea"
+        }
+      ],
+      "columns": [
+        "title",
+        "date",
+        "category",
+        "amount",
+        "method"
+      ]
+    }
+  ],
+  "limitations": [
+    "Garment tags are manually entered references; barcode scanning and tag-printer integration are not implemented.",
+    "Quantities are per listed garment/service. There is no separate garment-level status or physical count reconciliation.",
+    "Consumable stock is manually maintained; detergent recipes and automatic consumption are not implemented.",
+    "Collected is a workflow status only; inspect outstanding balance before handover. No SMS, routes, loss claims or refunds.",
+    "One owner account and one computer; no network synchronization."
+  ]
+}
